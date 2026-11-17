@@ -60,7 +60,14 @@ jobs:
         run: python -m pip install -r requirements.txt
 
       - name: Run smoke tests
-        run: python -m pytest -m smoke -v
+        run: python -m pytest -m smoke -v 2>&1 | tee pytest-output.txt
+
+      - name: Annotate failures
+        if: failure()
+        run: |
+          grep -aE "^(FAILED|ERROR)|^E   |TimeoutException|AssertionError" pytest-output.txt \
+            | tail -30 | cut -c1-900 \
+            | while IFS= read -r line; do echo "::error::${line}"; done
 
       - name: Upload test artifacts
         if: always()
@@ -99,7 +106,14 @@ jobs:
         run: python -m pip install -r requirements.txt
 
       - name: Run full regression
-        run: python -m pytest -v
+        run: python -m pytest -v 2>&1 | tee pytest-output.txt
+
+      - name: Annotate failures
+        if: failure()
+        run: |
+          grep -aE "^(FAILED|ERROR)|^E   |TimeoutException|AssertionError" pytest-output.txt \
+            | tail -30 | cut -c1-900 \
+            | while IFS= read -r line; do echo "::error::${line}"; done
 
       - name: Upload test artifacts
         if: always()
