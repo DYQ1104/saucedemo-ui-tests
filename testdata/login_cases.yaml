@@ -1,0 +1,8 @@
+# 登录空字段参数化数据：empty_field 指定置空字段，非空账号值由 accounts fixture 注入。
+- id: empty_username
+  empty_field: username
+  expected_error: "Epic sadface: Username is required"
+
+- id: empty_password
+  empty_field: password
+  expected_error: "Epic sadface: Password is required"

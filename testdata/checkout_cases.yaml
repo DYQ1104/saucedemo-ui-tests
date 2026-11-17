@@ -1,0 +1,21 @@
+# 结账信息页的非敏感参数化数据；账号凭据不放在仓库中。
+- id: missing_first_name
+  description: 缺少名
+  first_name: ""
+  last_name: "Doe"
+  postal_code: "100000"
+  expected_error: "Error: First Name is required"
+
+- id: missing_last_name
+  description: 缺少姓
+  first_name: "John"
+  last_name: ""
+  postal_code: "100000"
+  expected_error: "Error: Last Name is required"
+
+- id: missing_postal_code
+  description: 缺少邮编
+  first_name: "John"
+  last_name: "Doe"
+  postal_code: ""
+  expected_error: "Error: Postal Code is required"

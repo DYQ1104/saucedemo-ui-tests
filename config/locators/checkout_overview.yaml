@@ -1,0 +1,30 @@
+title:
+  by: css selector
+  value: "[data-test='title']"
+item_name:
+  by: css selector
+  value: "[data-test='inventory-item-name']"
+item_price:
+  by: css selector
+  value: "[data-test='inventory-item-price']"
+subtotal_label:
+  by: css selector
+  value: "[data-test='subtotal-label']"
+tax_label:
+  by: css selector
+  value: "[data-test='tax-label']"
+total_label:
+  by: css selector
+  value: "[data-test='total-label']"
+payment_info:
+  by: css selector
+  value: "[data-test='payment-info-value']"
+shipping_info:
+  by: css selector
+  value: "[data-test='shipping-info-value']"
+finish_button:
+  by: css selector
+  value: "[data-test='finish']"
+cancel_button:
+  by: css selector
+  value: "[data-test='cancel']"

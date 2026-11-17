@@ -1,0 +1,24 @@
+title:
+  by: css selector
+  value: "[data-test='title']"
+first_name:
+  by: css selector
+  value: "[data-test='firstName']"
+last_name:
+  by: css selector
+  value: "[data-test='lastName']"
+postal_code:
+  by: css selector
+  value: "[data-test='postalCode']"
+continue_button:
+  by: css selector
+  value: "[data-test='continue']"
+cancel_button:
+  by: css selector
+  value: "[data-test='cancel']"
+error_message:
+  by: css selector
+  value: "[data-test='error']"
+error_close_button:
+  by: css selector
+  value: "[data-test='error-button']"

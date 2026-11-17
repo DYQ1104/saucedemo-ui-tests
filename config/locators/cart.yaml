@@ -1,0 +1,33 @@
+title:
+  by: css selector
+  value: "[data-test='title']"
+cart_badge:
+  by: css selector
+  value: "[data-test='shopping-cart-badge']"
+cart_item:
+  by: css selector
+  value: "[data-test='inventory-item']"
+item_name:
+  by: css selector
+  value: "[data-test='inventory-item-name']"
+item_quantity:
+  by: css selector
+  value: "[data-test='item-quantity']"
+item_row_by_name:
+  by: xpath
+  value: "//div[@data-test='inventory-item'][.//div[@data-test='inventory-item-name' and normalize-space()='{product}']]"
+remove_by_name:
+  by: xpath
+  value: "//div[@data-test='inventory-item'][.//div[@data-test='inventory-item-name' and normalize-space()='{product}']]//button[starts-with(@data-test, 'remove')]"
+item_quantity_by_name:
+  by: xpath
+  value: "//div[@data-test='inventory-item'][.//div[@data-test='inventory-item-name' and normalize-space()='{product}']]//div[@data-test='item-quantity']"
+item_price_by_name:
+  by: xpath
+  value: "//div[@data-test='inventory-item'][.//div[@data-test='inventory-item-name' and normalize-space()='{product}']]//div[@data-test='inventory-item-price']"
+checkout_button:
+  by: css selector
+  value: "[data-test='checkout']"
+continue_shopping_button:
+  by: css selector
+  value: "[data-test='continue-shopping']"

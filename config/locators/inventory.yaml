@@ -1,0 +1,31 @@
+title:
+  by: css selector
+  value: "[data-test='title']"
+sort_select:
+  by: css selector
+  value: "[data-test='product-sort-container']"
+cart_link:
+  by: css selector
+  value: "[data-test='shopping-cart-link']"
+cart_badge:
+  by: css selector
+  value: "[data-test='shopping-cart-badge']"
+inventory_item:
+  by: css selector
+  value: "[data-test='inventory-item']"
+item_name:
+  by: css selector
+  value: "[data-test='inventory-item-name']"
+item_price:
+  by: css selector
+  value: "[data-test='inventory-item-price']"
+# 同一个商品行内，加入前按钮 data-test 为 add-to-cart-<slug>，加入后变为 remove-<slug>。
+add_to_cart_by_name:
+  by: xpath
+  value: "//div[@data-test='inventory-item'][.//div[@data-test='inventory-item-name' and normalize-space()='{product}']]//button[starts-with(@data-test, 'add-to-cart')]"
+remove_by_name:
+  by: xpath
+  value: "//div[@data-test='inventory-item'][.//div[@data-test='inventory-item-name' and normalize-space()='{product}']]//button[starts-with(@data-test, 'remove')]"
+item_price_by_name:
+  by: xpath
+  value: "//div[@data-test='inventory-item'][.//div[@data-test='inventory-item-name' and normalize-space()='{product}']]//div[@data-test='inventory-item-price']"

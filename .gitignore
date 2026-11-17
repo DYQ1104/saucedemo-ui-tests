@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+
+# 工具自动下载的 Python 运行时，不入库
+Python/
+
+# 运行产物不入库（含 reports/runs、logs/runs 按构建归档目录）
+reports/*
+!reports/.gitkeep
+logs/*
+!logs/.gitkeep

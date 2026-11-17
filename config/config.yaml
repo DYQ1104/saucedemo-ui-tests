@@ -1,0 +1,17 @@
+browser:
+  name: auto          # auto | chrome | edge | firefox
+  headless: true
+  window_size: "1440,1000"
+  page_load_strategy: normal
+
+timeouts:
+  implicit: 0         # 统一使用显式等待，隐式等待固定为 0
+  explicit: 10
+  page_load: 30
+
+artifacts:
+  screenshot_on_failure: true
+  save_page_source_on_failure: false
+
+logging:
+  level: INFO

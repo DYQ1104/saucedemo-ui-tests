@@ -1,0 +1,12 @@
+title:
+  by: css selector
+  value: "[data-test='title']"
+complete_header:
+  by: css selector
+  value: "[data-test='complete-header']"
+complete_text:
+  by: css selector
+  value: "[data-test='complete-text']"
+back_home_button:
+  by: css selector
+  value: "[data-test='back-to-products']"

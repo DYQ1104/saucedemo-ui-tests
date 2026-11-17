@@ -1,0 +1,15 @@
+username:
+  by: css selector
+  value: "[data-test='username']"
+password:
+  by: css selector
+  value: "[data-test='password']"
+login_button:
+  by: css selector
+  value: "[data-test='login-button']"
+error_message:
+  by: css selector
+  value: "[data-test='error']"
+error_close_button:
+  by: css selector
+  value: "[data-test='error-button']"
