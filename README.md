@@ -3,7 +3,7 @@
 > 技术栈：Selenium 4.52 + pytest 9.2 + PyYAML 6 + pytest-html 4（PO 模式）
 > 演示站点：<https://www.saucedemo.com/>
 > 最近验证：2026-11-17，Windows 11 + Python 3.13.12 + Edge 157（无头）。改造后全量 20/20（158.04s）；此前连续 3 轮 20/20（123.86s、131.95s、116.72s）。
-> CI：Chrome/Firefox 双浏览器 smoke 矩阵 + 定时全量回归，产物按 `UI_RUN_ID` 归档。
+> CI：Chrome/Firefox 双浏览器 smoke 矩阵 + 定时全量回归，产物按 `UI_RUN_ID` 归档。2026-11-17 托管首跑通过：unit + Chrome/Firefox smoke（run #2）。
 
 本仓库是一套可直接运行、可继续扩展的 Web UI 自动化工程，覆盖「登录 → 商品列表 → 加购 → 购物车 → 结账信息 → 订单概览 → 完成页」完整链路。定位器全部在真实站点 DOM 上核对过，不依赖猜测的 selector。
 
@@ -538,6 +538,7 @@ CI 约定：
 - 串行优先；SauceDemo 为共享演示站，矩阵只并行不同浏览器，不提高单浏览器并发。
 - 报告与截图作为构建产物归档，不提交仓库；失败截图可能含页面数据，产物保留期与访问权限需按团队规范控制。
 - `concurrency` 以 ref + 事件分组并 `cancel-in-progress`，同一分支重复推送只保留最新运行。
+- 测试失败时输出 `::error::` annotation，可直接在运行页或 API 看到失败用例与异常行。
 
 ---
 
@@ -554,7 +555,7 @@ CI 约定：
 | 7 | 先跑 3 条核心用例，再扩负向与排序 | `tests/test_*.py` | 完成 |
 | 8 | 失败截图、日志、HTML 报告，按构建归档 | `core/artifacts.py`、`reports/runs/`、`logs/runs/` | 完成 |
 | 9 | 配置层单元测试 | `tests_unit/`、`pytest-unit.ini` | 完成（32 条） |
-| 10 | 接入 CI 并保留扩展点 | `.github/workflows/ui-tests.yml` | 已配置，待仓库托管后首跑验证 |
+| 10 | 接入 CI 并保留扩展点 | `.github/workflows/ui-tests.yml` | 完成；托管 smoke 已通过 |
 
 ### 新增一条用例的标准动作
 
@@ -580,7 +581,7 @@ CI 约定：
 
 ### 11.2 下一步扩展
 
-1. **补齐浏览器矩阵实跑**：当前仅 Edge 157 完成本机三轮验证；Chrome/Firefox 已写入 CI 矩阵，需在托管环境首跑留证。
+1. **补齐浏览器矩阵证据**：Chrome/Firefox smoke 已在 CI 通过（run #2）；本机 Chrome/Firefox 全量、CI 全量 regression 仍待补。
 2. **更多边界场景**：商品详情页加购、结账概览取消、排序结果在页面跳转后的保持情况。
 3. **并行执行**：先确认账号与会话隔离，再引入 `pytest-xdist`，逐步提升并发。
 4. **报告升级**：需要趋势与附件时切换 Allure；当前 pytest-html 足够首期闭环。
@@ -601,7 +602,8 @@ CI 约定：
 - [x] 配置层单元测试 32 条通过，覆盖配置优先级、非法配置与归档逻辑
 - [x] README 说明安装、运行、目录职责、报告位置与账号边界
 - [x] 20 条用例与需求追踪矩阵逐条对齐：`python tools/verify_traceability.py` 23/23 检查通过
-- [ ] CI 托管首跑：工作流已就绪并通过结构校验，项目尚未关联 GitHub 远端，尚无真实 Run 记录
+- [x] CI 托管 smoke：unit + Chrome/Firefox smoke 在 GitHub Actions 通过（2026-11-17，run #2）
+- [ ] CI 全量 regression：等待手动 `workflow_dispatch` 首次运行
 
 ---
 
