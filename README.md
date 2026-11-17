@@ -25,7 +25,7 @@ pytest -v                             # 26 条全量回归
 ```
 
 > 最近验证：2026-11-17，Windows 11 + Python 3.13.12 + Edge 157（无头）。全量 26/26 通过（详见第 13.3 节）。
-> CI：Chrome/Firefox 双浏览器矩阵。run #8（push，含新 lint/单测矩阵/26 条 smoke）全部通过：Ruff 12s、unit 14s/21s、Chrome smoke 18s、Firefox smoke 38s；26 条全量 regression 由手动 dispatch 复验。
+> CI：run #10（dispatch）双浏览器 26 条全量通过：Ruff 9s、unit 13s/9s、Chrome regression 49s、Firefox regression 151s；run #8（push）lint + 单测矩阵 + 双浏览器 smoke 亦全部通过。
 
 **配套文档**：[需求规格说明书](docs/需求规格说明书.md)（范围、功能/非功能需求、26 条用例与验收标准）、[需求追踪矩阵](docs/需求追踪矩阵.md)（TC → BR/FR → 测试节点 → 标记 → 断言逐条映射）、[缺陷分析示例](docs/缺陷分析示例.md)（基于真实失败证据的定位过程）。
 
@@ -601,6 +601,8 @@ CI 约定：
 | #6 | dispatch | 被 #7 的 `concurrency` 取消 |
 | #7 | dispatch | unit 12s、Chrome regression 58s、Firefox regression 124s 通过 |
 | #8 | push | Ruff 12s、unit py3.13 14s、py3.11 21s、Chrome smoke 18s、Firefox smoke 38s 通过 |
+| #9 | dispatch | 被 #10 的 `concurrency` 取消 |
+| #10 | dispatch | Ruff 9s、unit py3.13 13s、py3.11 9s、Chrome regression 49s、Firefox regression 151s，26 条全量通过 |
 
 ---
 
@@ -645,7 +647,7 @@ CI 约定：
 
 ### 11.2 下一步扩展
 
-1. **补齐本机浏览器证据**：Chrome/Firefox 已在托管 CI 完成 20 条全量回归；本机 26 条全量已在 Edge 157 通过，双浏览器 26 条由最新 dispatch 复验。
+1. **补齐本机浏览器证据**：Chrome/Firefox 已在托管 CI 完成 26 条全量回归；本机仅 Edge 157 可运行。
 2. **更多边界场景**：排序结果跨页面保持、历史订单查询、支付失败分支。
 3. **并行执行**：先确认账号与会话隔离，再引入 `pytest-xdist`，逐步提升并发。
 4. **报告升级**：需要趋势与附件时切换 Allure；当前 pytest-html 已内嵌失败证据，足够首期闭环。
@@ -658,7 +660,7 @@ CI 约定：
 
 - [x] 一条命令可选择环境并运行指定测试：`pytest --env=demo tests/test_login.py -v`
 - [x] P0 用例本机稳定跑通：Edge 157 下 20 条连续 3 轮全部通过；新增用例后 26 条全量通过（200.78s，2026-11-17）
-- [ ] Chrome/Firefox 本机实跑：本机未安装 Chrome/Firefox，且 `winget` 安装被策略拦截；已在 CI 完成双浏览器 20 条全量回归，26 条待最新 dispatch 复验
+- [ ] Chrome/Firefox 本机实跑：本机未安装 Chrome/Firefox，且 `winget` 安装被策略拦截；已在 CI 完成双浏览器 26 条全量回归
 - [x] 定位器、环境地址、业务数据与测试代码分离
 - [x] 凭据可使用环境变量覆盖，仓库不保存真实凭据
 - [x] 每条用例独立 WebDriver，结束可靠 `quit()`
@@ -668,7 +670,7 @@ CI 约定：
 - [x] README 说明安装、运行、目录职责、报告位置与账号边界
 - [x] 26 条用例与需求追踪矩阵逐条对齐：`python tools/verify_traceability.py` 23/23 检查通过
 - [x] CI 托管 smoke：lint + unit（py3.11/3.13）+ Chrome/Firefox smoke 在 GitHub Actions 通过（run #8：12s / 14s / 21s / 18s / 38s）
-- [x] CI 全量 regression：dispatch run #7 通过（20 条），unit 12s、Chrome 58s、Firefox 124s；26 条全量待最新 dispatch 复验
+- [x] CI 全量 regression：dispatch run #10 通过 26 条，Chrome 49s、Firefox 151s；lint/unit 同时通过
 
 ---
 
