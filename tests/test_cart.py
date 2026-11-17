@@ -93,3 +93,17 @@ def test_continue_shopping_keeps_cart_items(pages, accounts):
 
     pages.inventory.wait_loaded()
     assert pages.inventory.cart_badge_count() == 2
+
+
+@pytest.mark.p2
+def test_cart_page_refresh_keeps_items(pages, accounts):
+    _login_and_open_inventory(pages, accounts)
+    pages.inventory.add_item_to_cart(BACKPACK)
+
+    pages.inventory.open_cart()
+    pages.cart.wait_loaded()
+    pages.cart.refresh()
+
+    assert pages.cart.product_names() == [BACKPACK]
+    assert pages.cart.item_quantity(BACKPACK) == "1"
+    assert pages.cart.cart_badge_count() == 1

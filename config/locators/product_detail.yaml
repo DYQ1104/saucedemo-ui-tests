@@ -1,0 +1,18 @@
+back_to_products:
+  by: css selector
+  value: "[data-test='back-to-products']"
+item_name:
+  by: css selector
+  value: "[data-test='inventory-item-name']"
+item_price:
+  by: css selector
+  value: "[data-test='inventory-item-price']"
+add_to_cart:
+  by: css selector
+  value: "[data-test='add-to-cart']"
+remove:
+  by: css selector
+  value: "[data-test='remove']"
+cart_badge:
+  by: css selector
+  value: "[data-test='shopping-cart-badge']"

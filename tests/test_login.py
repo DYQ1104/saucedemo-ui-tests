@@ -52,3 +52,26 @@ def test_login_with_empty_field_shows_error(pages, accounts, case):
     pages.login.open().login(values["username"], values["password"])
 
     assert pages.login.error_message() == case["expected_error"]
+
+
+@pytest.mark.p1
+def test_direct_protected_page_requires_login(pages):
+    pages.login.navigate("/inventory.html")
+
+    assert (
+        pages.login.error_message()
+        == "Epic sadface: You can only access '/inventory.html' when you are logged in."
+    )
+    assert pages.login.current_url().rstrip("/") == pages.login.base_url
+
+
+@pytest.mark.p1
+def test_logout_then_direct_access_is_blocked(pages, accounts):
+    pages.login.open().login(accounts.standard.username, accounts.standard.password)
+    pages.inventory.wait_loaded()
+
+    pages.inventory.logout()
+
+    assert pages.login.is_visible("login_button")
+    pages.login.navigate("/inventory.html")
+    assert "when you are logged in" in pages.login.error_message()

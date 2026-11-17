@@ -116,3 +116,18 @@ def test_back_home_after_order_clears_cart(pages, accounts):
     pages.cart.wait_loaded()
     pages.cart.wait_empty()
     assert not pages.cart.exists("cart_item")
+
+
+@pytest.mark.p1
+def test_cancel_from_overview_returns_to_products_with_items(pages, accounts):
+    _login_add_items_and_open_checkout(pages, accounts, [BACKPACK])
+    pages.checkout_info.submit_customer("John", "Doe", "100000")
+    pages.checkout_overview.wait_loaded()
+
+    pages.checkout_overview.cancel()
+    pages.inventory.wait_loaded()
+
+    assert pages.inventory.cart_badge_count() == 1
+    pages.inventory.open_cart()
+    pages.cart.wait_loaded()
+    assert pages.cart.product_names() == [BACKPACK]

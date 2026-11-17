@@ -11,7 +11,7 @@ class CheckoutOverviewPage(BasePage):
 
     PAGE_TITLE = "Checkout: Overview"
 
-    def wait_loaded(self) -> "CheckoutOverviewPage":
+    def wait_loaded(self) -> CheckoutOverviewPage:
         self.wait_url_contains("/checkout-step-two.html")
         self.wait_text("title", self.PAGE_TITLE)
         return self
@@ -34,13 +34,13 @@ class CheckoutOverviewPage(BasePage):
     def shipping_info(self) -> str:
         return self.text("shipping_info")
 
-    def finish(self) -> "CheckoutOverviewPage":
+    def finish(self) -> CheckoutOverviewPage:
         self.click("finish_button")
         self.wait_url_contains("/checkout-complete.html")
         log.info("Order finished")
         return self
 
-    def cancel(self) -> "CheckoutOverviewPage":
+    def cancel(self) -> CheckoutOverviewPage:
         self.click("cancel_button")
         self.wait_url_contains("/inventory.html")
         return self

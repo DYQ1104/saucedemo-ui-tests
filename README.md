@@ -1,13 +1,33 @@
-# SauceDemo UI 自动化测试方案
+# SauceDemo UI 自动化测试项目
 
-> 技术栈：Selenium 4.52 + pytest 9.2 + PyYAML 6 + pytest-html 4（PO 模式）
-> 演示站点：<https://www.saucedemo.com/>
-> 最近验证：2026-11-17，Windows 11 + Python 3.13.12 + Edge 157（无头）。改造后全量 20/20（158.04s）；此前连续 3 轮 20/20（123.86s、131.95s、116.72s）。
-> CI：Chrome/Firefox 双浏览器 smoke 矩阵 + 定时全量回归，产物按 `UI_RUN_ID` 归档。2026-11-17 托管验收：run #5 全量 regression 通过（unit 12s、Chrome 58s、Firefox 102s）。
+[![UI Tests](https://github.com/DYQ1104/saucedemo-ui-tests/actions/workflows/ui-tests.yml/badge.svg)](https://github.com/DYQ1104/saucedemo-ui-tests/actions/workflows/ui-tests.yml)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)
+[![Selenium](https://img.shields.io/badge/selenium-4.52-43B02A)](https://www.selenium.dev/)
+[![pytest](https://img.shields.io/badge/pytest-9.2-0A9EDC)](https://pytest.org/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-本仓库是一套可直接运行、可继续扩展的 Web UI 自动化工程，覆盖「登录 → 商品列表 → 加购 → 购物车 → 结账信息 → 订单概览 → 完成页」完整链路。定位器全部在真实站点 DOM 上核对过，不依赖猜测的 selector。
+Selenium + pytest + YAML 的 Web UI 自动化工程，覆盖 <https://www.saucedemo.com/> 从登录到下单的完整链路。26 条用例、7 个 Page Object、32 条配置层单测；定位器与测试数据全部外置，失败截图、现场 JSON 与日志尾部直接内嵌 HTML 报告。
 
-**配套文档**：[需求规格说明书](docs/需求规格说明书.md)（项目范围、功能/非功能需求、20 条用例范围与验收标准）、[需求追踪矩阵](docs/需求追踪矩阵.md)（TC → BR/FR → 测试节点 → 标记 → 断言 → 结果逐条映射）。矩阵可用 `python tools/verify_traceability.py` 自动校验。
+## 项目亮点
+
+- **分层边界可验证**：`tests / pages / core / config` 四层，页面对象无断言、测试层无定位器字面量，由 AST 检查守住约束。
+- **YAML 驱动**：环境、定位器、参数化数据全部外置；配置优先级 CLI > 环境变量 > 环境 YAML > 默认值，32 条单测覆盖。
+- **失败可诊断**：失败截图、现场元信息、日志尾部写入 pytest-html 报告，同时按 `run_id` 归档，报告单文件离线可开。
+- **需求可追溯**：SRS → RTM → pytest 节点 → 标记 → 断言逐条映射，`tools/verify_traceability.py` 自动校验 23 项。
+- **双浏览器 CI**：lint → 32 条单测 → Chrome/Firefox 矩阵；push/PR 跑 smoke，定时与手动触发跑全量回归。
+
+## 3 条常用命令
+
+```bash
+python tools/verify_traceability.py   # 校验用例、标记、文档与需求覆盖（不启动浏览器）
+pytest -m smoke -v                    # 4 条冒烟，提交前必跑
+pytest -v                             # 26 条全量回归
+```
+
+> 最近验证：2026-11-17，Windows 11 + Python 3.13.12 + Edge 157（无头）。全量 26/26 通过（详见第 13.3 节）。
+> CI：Chrome/Firefox 双浏览器矩阵；托管 run #7 全量 regression 通过（unit 12s、Chrome 58s、Firefox 124s）；新增 lint job 与 26 条用例后由最新 run 复验。
+
+**配套文档**：[需求规格说明书](docs/需求规格说明书.md)（范围、功能/非功能需求、26 条用例与验收标准）、[需求追踪矩阵](docs/需求追踪矩阵.md)（TC → BR/FR → 测试节点 → 标记 → 断言逐条映射）、[缺陷分析示例](docs/缺陷分析示例.md)（基于真实失败证据的定位过程）。
 
 ---
 
@@ -17,7 +37,7 @@
 
 - 用一套结构清晰的工程跑通 SauceDemo 的核心业务链路，验证框架闭环。
 - 页面定位器、环境地址、业务数据与测试代码分离，降低站点小改版带来的维护成本。
-- 失败时能定位问题：HTML 报告、截图、失败元信息、结构化日志四件套齐全。
+- 失败时能定位问题：HTML 报告内嵌截图与日志，归档目录保留完整现场。
 - 本地一条命令运行，CI 可复用同一套命令。
 
 ### 1.2 范围与边界
@@ -40,7 +60,8 @@ SauceDemo 是公开共享演示站点，**不做并发压测、不制造脏数�
 | Selenium | 4.52.0 | 浏览器操作，Selenium Manager 自动解析驱动 |
 | pytest | 9.2.0 | 用例发现、fixture、参数化、标记 |
 | PyYAML | 6.0.3 | 环境配置、定位器、参数化数据 |
-| pytest-html | 4.2.0 | 单文件 HTML 报告 |
+| pytest-html | 4.2.0 | 单文件 HTML 报告，内嵌失败证据 |
+| ruff | 0.17.5 | 静态检查（开发依赖） |
 
 ---
 
@@ -62,6 +83,7 @@ python -m venv .venv
 Set-ExecutionPolicy -Scope Process Bypass   # 如激活脚本被策略拦截
 .venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt   # 可选：ruff 静态检查
 ```
 
 Git Bash / macOS / Linux：
@@ -72,6 +94,7 @@ python -m venv .venv
 source .venv/Scripts/activate      # Windows Git Bash
 # source .venv/bin/activate        # macOS / Linux
 python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt   # 可选：ruff 静态检查
 ```
 
 ### 2.3 运行
@@ -79,6 +102,9 @@ python -m pip install -r requirements.txt
 ```bash
 # 全量（默认环境 demo，浏览器自动探测，无头）
 pytest -v
+
+# 静态检查（开发依赖安装后）
+ruff check .
 
 # 冒烟集（提交前必跑）
 pytest -m smoke -v
@@ -137,6 +163,7 @@ UI_RUN_ID=local-debug pytest -m smoke -v
 │   └── locators/                   # 按页面拆分定位器（全部来自真实 DOM）
 │       ├── login.yaml
 │       ├── inventory.yaml
+│       ├── product_detail.yaml
 │       ├── cart.yaml
 │       ├── checkout_info.yaml
 │       ├── checkout_overview.yaml
@@ -148,9 +175,10 @@ UI_RUN_ID=local-debug pytest -m smoke -v
 │   ├── logger.py                   # 日志初始化（累计日志 + 单次运行日志）
 │   ├── artifacts.py                # 失败产物与按 run_id 归档
 │   └── credentials.py              # 演示账号 + 环境变量覆盖
-├── pages/                          # 6 个 Page Object，只做动作与状态查询
+├── pages/                          # 7 个 Page Object，只做动作与状态查询
 │   ├── login_page.py
 │   ├── inventory_page.py
+│   ├── product_detail_page.py
 │   ├── cart_page.py
 │   ├── checkout_info_page.py
 │   ├── checkout_overview_page.py
@@ -169,16 +197,20 @@ UI_RUN_ID=local-debug pytest -m smoke -v
 │   └── login_cases.yaml            # 登录空字段参数化数据
 ├── docs/
 │   ├── 需求规格说明书.md            # 范围、功能/非功能需求与验收标准
-│   └── 需求追踪矩阵.md              # 20 条用例到需求、节点、标记与断言的映射
+│   ├── 需求追踪矩阵.md              # 26 条用例到需求、节点、标记与断言的映射
+│   └── 缺陷分析示例.md              # 基于真实失败证据的定位与分析样例
 ├── tools/
 │   └── verify_traceability.py      # 校验 SRS / RTM / 收集结果 / 标记 / 需求覆盖
 ├── reports/                        # 运行产物（不入库）
 │   └── runs/<run_id>/              # 按构建归档的报告、日志与失败产物
 ├── logs/                           # 运行日志（不入库）
-├── .github/workflows/ui-tests.yml  # CI：Chrome/Firefox 矩阵
+├── .github/workflows/ui-tests.yml  # CI：lint + unit + Chrome/Firefox 矩阵
 ├── pytest.ini                      # UI 测试配置
 ├── pytest-unit.ini                 # 配置层单元测试配置
-├── requirements.txt
+├── pyproject.toml                  # ruff 静态检查配置
+├── requirements.txt                # 运行依赖
+├── requirements-dev.txt            # 开发依赖（ruff）
+├── LICENSE                         # MIT
 ├── .gitignore
 └── README.md
 ```
@@ -360,7 +392,7 @@ assert pages.inventory.cart_badge_count() == 1
 
 ## 6. 用例设计与覆盖矩阵
 
-### 6.1 用例清单（20 条）
+### 6.1 用例清单（26 条）
 
 | # | 文件 | 用例 | 级别 | 标记 | 主要断言 |
 |---|---|---|---|---|---|
@@ -382,13 +414,19 @@ assert pages.inventory.cart_badge_count() == 1
 | 18 | test_checkout.py | 多商品结账金额 | P1 | regression | 商品列表、小计=单价和、总额=小计+税 |
 | 19 | test_checkout.py | 取消结账 | P1 | regression | 返回购物车且商品保留 |
 | 20 | test_checkout.py | 下单后返回商品页 | P2 | regression | badge 清空、购物车为空 |
+| 21 | test_login.py | 未登录直访受保护页 | P1 | regression | 提示仅登录后可访问、URL 回登录页 |
+| 22 | test_login.py | 登出后直访仍被拦截 | P1 | regression | 登出回登录页、再次直访仍被拦截 |
+| 23 | test_inventory.py | 详情页加购同步 | P1 | regression | 详情页价格一致、badge=1、列表显示 Remove |
+| 24 | test_inventory.py | 详情页移除同步 | P2 | regression | 详情页移除后 badge=0、列表恢复 Add to cart |
+| 25 | test_cart.py | 购物车刷新保持 | P2 | regression | 刷新后商品、数量、badge 均保留 |
+| 26 | test_checkout.py | 概览页取消 | P1 | regression | 返回商品页、badge=1、购物车商品保留 |
 
 ```bash
 pytest -m smoke        # 4 条：1/2/9/14
 pytest -m p0           # 4 条核心
-pytest -m p1           # 12 条重要用例
-pytest -m p2           # 4 条边界用例
-pytest -m regression   # 全部 20 条
+pytest -m p1           # 16 条重要用例
+pytest -m p2           # 6 条边界用例
+pytest -m regression   # 全部 26 条
 ```
 
 ### 6.2 YAML 参数化数据
@@ -466,7 +504,7 @@ def test_checkout_required_field_validation(pages, accounts, case):
 
 | 产物 | 路径 | 说明 |
 |---|---|---|
-| HTML 报告 | `reports/report.html` | 单文件，含用例状态、耗时、失败堆栈、日志 |
+| HTML 报告 | `reports/report.html` | 单文件，含用例状态、耗时、失败堆栈、日志；失败行内嵌截图、「失败现场信息」与「运行日志尾部」 |
 | 失败截图 | `reports/runs/<run_id>/screenshots/*.png` | 在 driver 退出前保存，文件名含时间戳与用例 ID |
 | 失败元信息 | `reports/runs/<run_id>/*.json` | URL、标题、环境、浏览器、版本、时间、`run_id` |
 | 页面源码 | `reports/runs/<run_id>/page_source/*.html` | 默认关闭，排查 DOM 时开启 |
@@ -481,28 +519,39 @@ def test_checkout_required_field_validation(pages, accounts, case):
 
 ## 9. CI 接入
 
-已提供 `.github/workflows/ui-tests.yml`，三个 job：
+已提供 `.github/workflows/ui-tests.yml`，四个 job：
 
 | Job | 触发条件 | 内容 | 产物保留 |
 |---|---|---|---|
-| `unit` | push(main) / PR / 手动 / 定时 | `pytest -c pytest-unit.ini -v`（32 条配置层单测） | 无 |
-| `smoke` | push(main) / PR / 手动 | Chrome、Firefox 矩阵，`pytest -m smoke -v` | 7 天 |
+| `lint` | push(main) / PR / 手动 / 定时 | `ruff check .` | 无 |
+| `unit` | push(main) / PR / 手动 / 定时 | Python 3.11、3.13 矩阵，`pytest -c pytest-unit.ini -v`（32 条配置层单测） | 无 |
+| `smoke` | push(main) / PR | Chrome、Firefox 矩阵，`pytest -m smoke -v` | 7 天 |
 | `regression` | 定时（每日 18:00 UTC）/ 手动 | Chrome、Firefox 矩阵，全量 `pytest -v` | 14 天 |
 
 ```yaml
 jobs:
-  unit:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.13", cache: pip }
+      - run: python -m pip install -r requirements-dev.txt
+      - run: ruff check .
+
+  unit:
+    strategy:
+      matrix: { python: ["3.11", "3.13"] }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "${{ matrix.python }}", cache: pip }
       - run: python -m pip install -r requirements.txt
       - run: python -m pytest -c pytest-unit.ini -v
 
   smoke:
-    if: github.event_name != 'schedule'
-    needs: unit
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    needs: [lint, unit]
     strategy:
       fail-fast: false
       matrix: { browser: [chrome, firefox] }
@@ -531,8 +580,8 @@ jobs:
 
 CI 约定：
 
-- 单元测试先行，失败则 smoke/regression 不启动，避免浪费浏览器时长。
-- PR 跑 smoke（双浏览器），定时与手动跑全量回归（双浏览器）。
+- 静态检查与单元测试先行，失败则 smoke/regression 不启动，避免浪费浏览器时长。
+- PR 跑 lint + 单测 + smoke（双浏览器），定时与手动跑全量回归（双浏览器）。
 - `UI_RUN_ID` 由构建号生成，`reports/runs/<run_id>/` 与 `logs/runs/<run_id>/` 一一对应，产物按构建下载。
 - 凭据通过 Secret 注入，仓库只保存变量名。
 - 串行优先；SauceDemo 为共享演示站，矩阵只并行不同浏览器，不提高单浏览器并发。
@@ -565,7 +614,9 @@ CI 约定：
 | 7 | 先跑 3 条核心用例，再扩负向与排序 | `tests/test_*.py` | 完成 |
 | 8 | 失败截图、日志、HTML 报告，按构建归档 | `core/artifacts.py`、`reports/runs/`、`logs/runs/` | 完成 |
 | 9 | 配置层单元测试 | `tests_unit/`、`pytest-unit.ini` | 完成（32 条） |
-| 10 | 接入 CI 并保留扩展点 | `.github/workflows/ui-tests.yml` | 完成；托管 smoke 与全量 regression 均通过 |
+| 10 | 静态检查与 CI 门禁 | `pyproject.toml`、`requirements-dev.txt`、`.github/workflows/ui-tests.yml` | 完成；ruff 0 告警，lint 纳入 CI |
+| 11 | 补充风险型用例 | `tests/test_*.py`、`pages/product_detail_page.py` | 完成（TC-021 ~ TC-026） |
+| 12 | 失败证据内嵌报告 | `tests/conftest.py`、`core/artifacts.py` | 完成；截图、现场 JSON、日志尾部随报告展示 |
 
 ### 新增一条用例的标准动作
 
@@ -591,10 +642,10 @@ CI 约定：
 
 ### 11.2 下一步扩展
 
-1. **补齐本机浏览器证据**：Chrome/Firefox 已在托管 CI 完成 20 条全量回归；本机仍仅 Edge 157 可运行。
-2. **更多边界场景**：商品详情页加购、结账概览取消、排序结果在页面跳转后的保持情况。
+1. **补齐本机浏览器证据**：Chrome/Firefox 已在托管 CI 完成 20 条全量回归；本机 26 条全量已在 Edge 157 通过，双浏览器 26 条由最新 dispatch 复验。
+2. **更多边界场景**：排序结果跨页面保持、历史订单查询、支付失败分支。
 3. **并行执行**：先确认账号与会话隔离，再引入 `pytest-xdist`，逐步提升并发。
-4. **报告升级**：需要趋势与附件时切换 Allure；当前 pytest-html 足够首期闭环。
+4. **报告升级**：需要趋势与附件时切换 Allure；当前 pytest-html 已内嵌失败证据，足够首期闭环。
 5. **Page Component**：页头、购物车 badge 等复用组件抽成组件对象，减少重复。
 6. **测试数据治理**：需要后端造数时增加 fixture 级数据准备与清理。
 
@@ -603,17 +654,18 @@ CI 约定：
 ## 12. 验收核对
 
 - [x] 一条命令可选择环境并运行指定测试：`pytest --env=demo tests/test_login.py -v`
-- [x] P0 用例本机稳定跑通：Edge 157 下 20 条连续 3 轮全部通过（2026-11-17）
-- [ ] Chrome/Firefox 本机实跑：本机未安装 Chrome/Firefox，且 `winget` 安装被策略拦截；已在 CI 配置双浏览器矩阵，待托管环境首跑留证
+- [x] P0 用例本机稳定跑通：Edge 157 下 20 条连续 3 轮全部通过；新增用例后 26 条全量通过（200.78s，2026-11-17）
+- [ ] Chrome/Firefox 本机实跑：本机未安装 Chrome/Firefox，且 `winget` 安装被策略拦截；已在 CI 完成双浏览器 20 条全量回归，26 条待最新 dispatch 复验
 - [x] 定位器、环境地址、业务数据与测试代码分离
 - [x] 凭据可使用环境变量覆盖，仓库不保存真实凭据
 - [x] 每条用例独立 WebDriver，结束可靠 `quit()`
-- [x] 失败时生成截图、元信息、日志和 HTML 报告，并按 `UI_RUN_ID` 归档到 `reports/runs/<run_id>/`
+- [x] 失败时生成截图、元信息、日志和 HTML 报告，报告中内嵌截图、现场 JSON 与日志尾部，并按 `UI_RUN_ID` 归档
 - [x] 配置层单元测试 32 条通过，覆盖配置优先级、非法配置与归档逻辑
+- [x] ruff 静态检查 0 告警，并纳入 CI lint job
 - [x] README 说明安装、运行、目录职责、报告位置与账号边界
-- [x] 20 条用例与需求追踪矩阵逐条对齐：`python tools/verify_traceability.py` 23/23 检查通过
+- [x] 26 条用例与需求追踪矩阵逐条对齐：`python tools/verify_traceability.py` 23/23 检查通过
 - [x] CI 托管 smoke：unit + Chrome/Firefox smoke 在 GitHub Actions 通过（2026-11-17，run #2/#3）
-- [x] CI 全量 regression：dispatch run #5 通过，unit 12s、Chrome 58s、Firefox 102s
+- [x] CI 全量 regression：dispatch run #7 通过，unit 12s、Chrome 58s、Firefox 124s；新增 lint 与 26 条用例后由最新 run 复验
 
 ---
 
@@ -632,6 +684,9 @@ CI 约定：
 | 商品 | 购物车链接 | `[data-test='shopping-cart-link']` |
 | 商品 | 购物车角标 | `[data-test='shopping-cart-badge']` |
 | 商品 | 商品名/价格 | `[data-test='inventory-item-name']` / `[data-test='inventory-item-price']` |
+| 商品 | 商品详情链接 | 商品行内 `a[data-test*='title-link']` |
+| 商品 | 菜单/登出 | `#react-burger-menu-btn` / `[data-test='logout-sidebar-link']` |
+| 商品详情 | 返回列表/加购/移除 | `[data-test='back-to-products']` / `add-to-cart` / `remove` |
 | 购物车 | 结算按钮 | `[data-test='checkout']` |
 | 购物车 | 商品数量 | `[data-test='item-quantity']` |
 | 结账信息 | 名/姓/邮编 | `[data-test='firstName']` / `lastName` / `postalCode` |
@@ -648,8 +703,9 @@ CI 约定：
 | 页面 | 主要方法 |
 |---|---|
 | LoginPage | `open()`、`login(u,p)`、`error_message()`、`dismiss_error()` |
-| InventoryPage | `wait_loaded()`、`add_item_to_cart(name)`、`remove_item(name)`、`cart_badge_count()`、`open_cart()`、`sort_by(label)`、`product_names()`、`product_prices()`、`item_price(name)` |
-| CartPage | `wait_loaded()`、`wait_empty()`、`product_names()`、`item_quantity(name)`、`item_price(name)`、`remove_item(name)`、`open_checkout()`、`continue_shopping()` |
+| InventoryPage | `wait_loaded()`、`add_item_to_cart(name)`、`remove_item(name)`、`cart_badge_count()`、`open_cart()`、`sort_by(label)`、`product_names()`、`product_prices()`、`item_price(name)`、`open_product(name)`、`logout()` |
+| ProductDetailPage | `wait_loaded()`、`product_name()`、`item_price()`、`cart_badge_count()`、`add_to_cart()`、`remove_from_cart()`、`back_to_products()` |
+| CartPage | `wait_loaded()`、`wait_empty()`、`product_names()`、`item_quantity(name)`、`item_price(name)`、`remove_item(name)`、`open_checkout()`、`continue_shopping()`、`refresh()` |
 | CheckoutInfoPage | `wait_loaded()`、`fill_customer(...)`、`submit_customer(...)`、`error_message()`、`cancel()` |
 | CheckoutOverviewPage | `wait_loaded()`、`product_names()`、`subtotal_text()`、`tax_text()`、`total_text()`、`finish()`、`cancel()` |
 | CheckoutCompletePage | `wait_loaded()`、`header_text()`、`message_text()`、`back_home()` |
@@ -659,8 +715,16 @@ CI 约定：
 ```text
 platform win32 -- Python 3.13.12, pytest-9.2.0
 browser=edge 157.0.4341.60 headless=True
-collected 20 items
-20 passed in 116.72s
+collected 26 items
+26 passed in 200.78s
 ```
 
-首次运行还会叠加 Selenium Manager 驱动解析时间；驱动缓存后全量约 2 分钟。
+运行编号 `final-26cases-20261117g`，报告与归档见 `reports/runs/final-26cases-20261117g/`。紧邻的前一轮为 25/26：失败用例在新建会话首次导航时收到 `net::ERR_CONNECTION_CLOSED`，属于公网站点瞬时断连，复跑整轮 26/26 通过（分析见 [`docs/缺陷分析示例.md`](docs/缺陷分析示例.md)）。
+
+首次运行还会叠加 Selenium Manager 驱动解析时间；驱动缓存后全量约 3~4 分钟。
+
+---
+
+## 14. 许可证
+
+本项目采用 [MIT License](LICENSE)，可自由用于学习、面试与二次开发。SauceDemo 为公开演示站点，站点本身及其内容不属于本项目。

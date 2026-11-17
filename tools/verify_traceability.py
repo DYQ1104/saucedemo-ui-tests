@@ -28,7 +28,7 @@ UNIT_INI = ROOT / "pytest-unit.ini"
 CORE_DIR = ROOT / "core"
 PAGES_DIR = ROOT / "pages"
 
-EXPECTED_MARKER_COUNTS = {"smoke": 4, "p0": 4, "p1": 12, "p2": 4, "regression": 20}
+EXPECTED_MARKER_COUNTS = {"smoke": 4, "p0": 4, "p1": 16, "p2": 6, "regression": 26}
 
 passes: list[str] = []
 failures: list[str] = []
@@ -229,25 +229,25 @@ def main() -> int:
     test_markers = inspect_test_markers()
 
     # 1. SRS 用例表
-    expected_ids = [f"TC-{number:03d}" for number in range(1, 21)]
+    expected_ids = [f"TC-{number:03d}" for number in range(1, 27)]
     srs_ids = [case["id"] for case in srs_cases]
-    check(len(srs_cases) == 20, "SRS 用例表共 20 条", f"SRS 用例表为 {len(srs_cases)} 条，应为 20 条")
-    check(srs_ids == expected_ids, "SRS 用例编号 TC-001 ~ TC-020 连续无缺号", f"SRS 用例编号异常：{srs_ids}")
+    check(len(srs_cases) == 26, "SRS 用例表共 26 条", f"SRS 用例表为 {len(srs_cases)} 条，应为 26 条")
+    check(srs_ids == expected_ids, "SRS 用例编号 TC-001 ~ TC-026 连续无缺号", f"SRS 用例编号异常：{srs_ids}")
 
     # 2. RTM 与 SRS 对齐
     rtm_ids = [row["id"] for row in rtm_rows]
-    check(len(rtm_rows) == 20, "RTM 逐条矩阵共 20 行", f"RTM 逐条矩阵为 {len(rtm_rows)} 行，应为 20 行")
+    check(len(rtm_rows) == 26, "RTM 逐条矩阵共 26 行", f"RTM 逐条矩阵为 {len(rtm_rows)} 行，应为 26 行")
     check(rtm_ids == srs_ids, "RTM 用例编号与 SRS 完全一致", "RTM 与 SRS 的用例编号或顺序不一致")
     mismatched_scenarios = [
         f"{srs['id']}: {srs['scenario']} != {rtm['scenario']}"
-        for srs, rtm in zip(srs_cases, rtm_rows)
+        for srs, rtm in zip(srs_cases, rtm_rows, strict=False)
         if srs["scenario"] != rtm["scenario"]
     ]
     check(not mismatched_scenarios, "RTM 场景描述与 SRS 一致", f"场景描述不一致：{mismatched_scenarios}")
 
     # 3. 测试节点与 pytest 收集结果对齐
     rtm_nodes = [row["node"] for row in rtm_rows]
-    check(len(items) == 20, f"pytest 实际收集 20 条（当前 {len(items)} 条）", f"pytest 实际收集 {len(items)} 条，应为 20 条")
+    check(len(items) == 26, f"pytest 实际收集 26 条（当前 {len(items)} 条）", f"pytest 实际收集 {len(items)} 条，应为 26 条")
     check(
         sorted(rtm_nodes) == sorted(items),
         "RTM 测试节点与 pytest 收集结果完全一致",
@@ -257,14 +257,14 @@ def main() -> int:
     check(len(set(rtm_nodes)) == len(rtm_nodes), "RTM 无重复测试节点", "RTM 存在重复测试节点")
     node_mismatches = [
         f"{srs['id']} -> {srs['test']} != {row['node']}"
-        for srs, row in zip(srs_cases, rtm_rows)
+        for srs, row in zip(srs_cases, rtm_rows, strict=False)
         if not row["node"].endswith(srs["test"])
     ]
     check(not node_mismatches, "SRS 测试函数名与 RTM 节点一一对应", f"测试函数名不一致：{node_mismatches}")
 
     # 4. 标记：AST 实际标记 vs RTM / SRS 优先级
     marker_problems = []
-    for srs, row in zip(srs_cases, rtm_rows):
+    for srs, row in zip(srs_cases, rtm_rows, strict=False):
         module, rest = row["node"].split("::", 1)
         function = rest.split("[", 1)[0]
         actual = test_markers.get((module, function))
@@ -275,7 +275,7 @@ def main() -> int:
         missing = expected - actual
         if missing:
             marker_problems.append(f"{row['id']}: 缺少标记 {sorted(missing)}，实际 {sorted(actual)}")
-    check(not marker_problems, "20 条用例的优先级与标记均与源码一致", f"标记不一致：{marker_problems}")
+    check(not marker_problems, "26 条用例的优先级与标记均与源码一致", f"标记不一致：{marker_problems}")
 
     marker_counts = {name: 0 for name in EXPECTED_MARKER_COUNTS}
     for item in items:
@@ -340,7 +340,7 @@ def main() -> int:
 
     # 7. README 用例矩阵数量
     readme_count = count_readme_cases(readme_text)
-    check(readme_count == 20, "README 用例矩阵覆盖 20 条（15-17 展开为 3 条）", f"README 用例矩阵为 {readme_count} 条")
+    check(readme_count == 26, "README 用例矩阵覆盖 26 条（15-17 展开为 3 条）", f"README 用例矩阵为 {readme_count} 条")
 
     # 8. 需求覆盖：SRS 定义的需求 ID 必须全部出现在 RTM
     defined_ids: set[str] = set()

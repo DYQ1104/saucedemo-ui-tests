@@ -29,3 +29,12 @@ remove_by_name:
 item_price_by_name:
   by: xpath
   value: "//div[@data-test='inventory-item'][.//div[@data-test='inventory-item-name' and normalize-space()='{product}']]//div[@data-test='inventory-item-price']"
+open_item_by_name:
+  by: xpath
+  value: "//div[@data-test='inventory-item'][.//div[@data-test='inventory-item-name' and normalize-space()='{product}']]//a[contains(@data-test, 'title-link')]"
+menu_button:
+  by: id
+  value: react-burger-menu-btn
+logout_link:
+  by: css selector
+  value: "[data-test='logout-sidebar-link']"

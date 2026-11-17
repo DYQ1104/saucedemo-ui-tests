@@ -9,12 +9,12 @@ log = get_logger("page.login")
 class LoginPage(BasePage):
     """SauceDemo 登录页。"""
 
-    def open(self) -> "LoginPage":
+    def open(self) -> LoginPage:
         self.navigate("/")
         self.wait_visible("login_button")
         return self
 
-    def login(self, username: str, password: str) -> "LoginPage":
+    def login(self, username: str, password: str) -> LoginPage:
         self.input_text("username", username)
         self.input_text("password", password)
         self.click("login_button")
@@ -24,7 +24,7 @@ class LoginPage(BasePage):
     def error_message(self) -> str:
         return self.text("error_message")
 
-    def dismiss_error(self) -> "LoginPage":
+    def dismiss_error(self) -> LoginPage:
         if self.exists("error_close_button"):
             self.click("error_close_button")
         return self

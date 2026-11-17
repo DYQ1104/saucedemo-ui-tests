@@ -134,7 +134,7 @@ class BasePage:
     def current_url(self) -> str:
         return self.driver.current_url
 
-    def navigate(self, path: str = "/") -> "BasePage":
+    def navigate(self, path: str = "/") -> BasePage:
         url = urljoin(self.base_url + "/", path.lstrip("/"))
         log.info("navigate %s", url)
         self.driver.get(url)

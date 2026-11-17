@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from copy import deepcopy
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -176,7 +176,7 @@ def validate_locators(data: Any, source: str | Path = "locators") -> None:
             raise ConfigError(f"Locator {name!r} in {source} has an empty value")
 
 
-@lru_cache(maxsize=None)
+@cache
 def load_locators(page: str) -> dict[str, dict[str, str]]:
     path = CONFIG_DIR / "locators" / f"{page}.yaml"
     data = read_yaml(path)

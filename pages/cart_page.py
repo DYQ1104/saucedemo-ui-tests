@@ -11,12 +11,12 @@ class CartPage(BasePage):
 
     PAGE_TITLE = "Your Cart"
 
-    def wait_loaded(self) -> "CartPage":
+    def wait_loaded(self) -> CartPage:
         self.wait_url_contains("/cart.html")
         self.wait_text("title", self.PAGE_TITLE)
         return self
 
-    def wait_empty(self) -> "CartPage":
+    def wait_empty(self) -> CartPage:
         self.wait.until(lambda _: not self.exists("cart_item"))
         return self
 
@@ -38,18 +38,24 @@ class CartPage(BasePage):
     def item_price(self, product_name: str) -> str:
         return self.text("item_price_by_name", product=product_name)
 
-    def remove_item(self, product_name: str) -> "CartPage":
+    def remove_item(self, product_name: str) -> CartPage:
         self.click("remove_by_name", product=product_name)
         self.wait_absent("item_row_by_name", product=product_name)
         log.info("Removed from cart: %s", product_name)
         return self
 
-    def continue_shopping(self) -> "CartPage":
+    def continue_shopping(self) -> CartPage:
         self.click("continue_shopping_button")
         self.wait_url_contains("/inventory.html")
         return self
 
-    def open_checkout(self) -> "CartPage":
+    def open_checkout(self) -> CartPage:
         self.click("checkout_button")
         self.wait_url_contains("/checkout-step-one.html")
+        return self
+
+    def refresh(self) -> CartPage:
+        self.driver.refresh()
+        self.wait_loaded()
+        log.info("Cart page refreshed")
         return self

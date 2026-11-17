@@ -8,7 +8,7 @@ class CheckoutCompletePage(BasePage):
 
     PAGE_TITLE = "Checkout: Complete!"
 
-    def wait_loaded(self) -> "CheckoutCompletePage":
+    def wait_loaded(self) -> CheckoutCompletePage:
         self.wait_url_contains("/checkout-complete.html")
         self.wait_text("title", self.PAGE_TITLE)
         return self
@@ -19,7 +19,7 @@ class CheckoutCompletePage(BasePage):
     def message_text(self) -> str:
         return self.text("complete_text")
 
-    def back_home(self) -> "CheckoutCompletePage":
+    def back_home(self) -> CheckoutCompletePage:
         self.click("back_home_button")
         self.wait_url_contains("/inventory.html")
         return self

@@ -13,7 +13,7 @@ class InventoryPage(BasePage):
 
     PAGE_TITLE = "Products"
 
-    def wait_loaded(self) -> "InventoryPage":
+    def wait_loaded(self) -> InventoryPage:
         self.wait_url_contains("/inventory.html")
         self.wait_text("title", self.PAGE_TITLE)
         return self
@@ -21,14 +21,14 @@ class InventoryPage(BasePage):
     def title_text(self) -> str:
         return self.text("title")
 
-    def add_item_to_cart(self, product_name: str) -> "InventoryPage":
+    def add_item_to_cart(self, product_name: str) -> InventoryPage:
         self.click("add_to_cart_by_name", product=product_name)
         # 加入成功后按钮变为 Remove，作为业务状态完成的信号。
         self.wait_visible("remove_by_name", product=product_name)
         log.info("Added to cart: %s", product_name)
         return self
 
-    def remove_item(self, product_name: str) -> "InventoryPage":
+    def remove_item(self, product_name: str) -> InventoryPage:
         self.click("remove_by_name", product=product_name)
         self.wait_visible("add_to_cart_by_name", product=product_name)
         return self
@@ -39,12 +39,12 @@ class InventoryPage(BasePage):
         raw = self.text("cart_badge")
         return int(raw) if raw else 0
 
-    def open_cart(self) -> "InventoryPage":
+    def open_cart(self) -> InventoryPage:
         self.click("cart_link")
         self.wait_url_contains("/cart.html")
         return self
 
-    def sort_by(self, option_label: str) -> "InventoryPage":
+    def sort_by(self, option_label: str) -> InventoryPage:
         Select(self.wait_visible("sort_select")).select_by_visible_text(option_label)
         self.wait.until(
             lambda _: Select(self.wait_present("sort_select")).first_selected_option.text
@@ -61,6 +61,19 @@ class InventoryPage(BasePage):
 
     def item_price(self, product_name: str) -> str:
         return self.text("item_price_by_name", product=product_name)
+
+    def open_product(self, product_name: str) -> InventoryPage:
+        self.click("open_item_by_name", product=product_name)
+        self.wait_url_contains("/inventory-item.html")
+        log.info("Opened product detail: %s", product_name)
+        return self
+
+    def logout(self) -> InventoryPage:
+        self.click("menu_button")
+        self.click("logout_link")
+        self.wait.until(lambda _: self.current_url().rstrip("/") == self.base_url)
+        log.info("Logged out")
+        return self
 
     @staticmethod
     def _to_amount(price_text: str) -> float:
