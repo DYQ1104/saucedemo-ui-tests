@@ -25,7 +25,7 @@ pytest -v                             # 26 条全量回归
 ```
 
 > 最近验证：2026-11-17，Windows 11 + Python 3.13.12 + Edge 157（无头）。全量 26/26 通过（详见第 13.3 节）。
-> CI：Chrome/Firefox 双浏览器矩阵；托管 run #7 全量 regression 通过（unit 12s、Chrome 58s、Firefox 124s）；新增 lint job 与 26 条用例后由最新 run 复验。
+> CI：Chrome/Firefox 双浏览器矩阵。run #8（push，含新 lint/单测矩阵/26 条 smoke）全部通过：Ruff 12s、unit 14s/21s、Chrome smoke 18s、Firefox smoke 38s；26 条全量 regression 由手动 dispatch 复验。
 
 **配套文档**：[需求规格说明书](docs/需求规格说明书.md)（范围、功能/非功能需求、26 条用例与验收标准）、[需求追踪矩阵](docs/需求追踪矩阵.md)（TC → BR/FR → 测试节点 → 标记 → 断言逐条映射）、[缺陷分析示例](docs/缺陷分析示例.md)（基于真实失败证据的定位过程）。
 
@@ -598,6 +598,9 @@ CI 约定：
 | #3 | push（文档） | 通过 |
 | #4 | dispatch | 被 #5 的 `concurrency` 取消 |
 | #5 | dispatch | unit 12s、Chrome regression 58s、Firefox regression 102s 通过 |
+| #6 | dispatch | 被 #7 的 `concurrency` 取消 |
+| #7 | dispatch | unit 12s、Chrome regression 58s、Firefox regression 124s 通过 |
+| #8 | push | Ruff 12s、unit py3.13 14s、py3.11 21s、Chrome smoke 18s、Firefox smoke 38s 通过 |
 
 ---
 
@@ -664,8 +667,8 @@ CI 约定：
 - [x] ruff 静态检查 0 告警，并纳入 CI lint job
 - [x] README 说明安装、运行、目录职责、报告位置与账号边界
 - [x] 26 条用例与需求追踪矩阵逐条对齐：`python tools/verify_traceability.py` 23/23 检查通过
-- [x] CI 托管 smoke：unit + Chrome/Firefox smoke 在 GitHub Actions 通过（2026-11-17，run #2/#3）
-- [x] CI 全量 regression：dispatch run #7 通过，unit 12s、Chrome 58s、Firefox 124s；新增 lint 与 26 条用例后由最新 run 复验
+- [x] CI 托管 smoke：lint + unit（py3.11/3.13）+ Chrome/Firefox smoke 在 GitHub Actions 通过（run #8：12s / 14s / 21s / 18s / 38s）
+- [x] CI 全量 regression：dispatch run #7 通过（20 条），unit 12s、Chrome 58s、Firefox 124s；26 条全量待最新 dispatch 复验
 
 ---
 
