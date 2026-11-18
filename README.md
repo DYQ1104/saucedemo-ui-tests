@@ -26,7 +26,7 @@ pytest -v                             # 26 条全量回归
 ```
 
 > 最近验证：2026-11-18，Windows 11 + Python 3.13.12。Edge 157（无头）26/26 200.78s；Chrome 158（有头）26/26 362.14s（详见第 13.3 节）。
-> CI：run #10（dispatch）双浏览器 26 条全量通过：Ruff 9s、unit 13s/9s、Chrome regression 49s、Firefox regression 151s；run #8（push）lint + 单测矩阵 + 双浏览器 smoke 亦全部通过。
+> CI：run #10（dispatch）双浏览器 26 条全量通过：Ruff 9s、unit 13s/9s、Chrome regression 49s、Firefox regression 151s；run #11（schedule）定时回归同样双浏览器通过；run #12（push）新增 offline job，22 条离线测试 50s 通过，双浏览器 smoke 同步通过。
 
 **配套文档**：[面试讲解卡](docs/面试讲解卡.md)（一页看懂架构、取舍与量化证据）、[需求规格说明书](docs/需求规格说明书.md)（范围、功能/非功能需求、26 条用例与验收标准）、[需求追踪矩阵](docs/需求追踪矩阵.md)（TC → BR/FR → 测试节点 → 标记 → 断言逐条映射）、[用例设计说明](docs/用例设计说明.md)（风险模型、等价类/边界值/状态迁移与 26 条用例映射）、[缺陷分析示例](docs/缺陷分析示例.md)（基于真实失败证据的定位过程）。
 
@@ -614,7 +614,7 @@ CI 约定：
 - `concurrency` 以 ref + 事件分组并 `cancel-in-progress`，同一分支重复推送只保留最新运行。
 - 测试失败时输出 `::error::` annotation，可直接在运行页或 API 看到失败用例与异常行。
 
-托管运行记录（2026-11-17）：
+托管运行记录（2026-11-17 ~ 2026-11-18）：
 
 | Run | 触发 | 结果 |
 |---|---|---|
@@ -628,6 +628,8 @@ CI 约定：
 | #8 | push | Ruff 12s、unit py3.13 14s、py3.11 21s、Chrome smoke 18s、Firefox smoke 38s 通过 |
 | #9 | dispatch | 被 #10 的 `concurrency` 取消 |
 | #10 | dispatch | Ruff 9s、unit py3.13 13s、py3.11 9s、Chrome regression 49s、Firefox regression 151s，26 条全量通过 |
+| #11 | schedule | 定时回归首次自动触发：Ruff 23s、unit py3.13 25s、py3.11 14s、Chrome regression 57s、Firefox regression 138s，26 条全量通过 |
+| #12 | push | Ruff 16s、unit py3.13 12s、py3.11 14s、offline 22 条 50s、Chrome smoke 31s、Firefox smoke 33s，全部通过 |
 
 ---
 
@@ -696,8 +698,9 @@ CI 约定：
 - [x] ruff 静态检查 0 告警，并纳入 CI lint job
 - [x] README 说明安装、运行、目录职责、报告位置与账号边界
 - [x] 26 条用例与需求追踪矩阵逐条对齐：`python tools/verify_traceability.py` 23/23 检查通过
-- [x] CI 托管 smoke：lint + unit（py3.11/3.13）+ Chrome/Firefox smoke 在 GitHub Actions 通过（run #8：12s / 14s / 21s / 18s / 38s）
-- [x] CI 全量 regression：dispatch run #10 通过 26 条，Chrome 49s、Firefox 151s；lint/unit 同时通过
+- [x] CI 托管 smoke：lint + unit（py3.11/3.13）+ Chrome/Firefox smoke 在 GitHub Actions 通过（run #8：12s / 14s / 21s / 18s / 38s；run #12：离线 job 后再次通过）
+- [x] CI 离线页面对象测试：run #12 的 `offline` job 22 条通过（50s），并作为 smoke/regression 的前置门禁
+- [x] CI 全量 regression：dispatch run #10 与 schedule run #11 均通过 26 条，Chrome/Firefox 双浏览器通过；lint/unit 同时通过
 
 ---
 
