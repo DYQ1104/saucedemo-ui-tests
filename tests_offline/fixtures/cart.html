@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Your Cart</title>
+</head>
+<body>
+  <div data-test="title">Your Cart</div>
+  <div id="badge-host"></div>
+  <a data-test="continue-shopping" href="inventory.html">Continue Shopping</a>
+  <button data-test="checkout" id="checkout" type="button">Checkout</button>
+
+  <div id="rows">
+    <div data-test="inventory-item" data-name="Sauce Labs Backpack">
+      <div data-test="inventory-item-name">Sauce Labs Backpack</div>
+      <div data-test="item-quantity">1</div>
+      <div data-test="inventory-item-price">$29.99</div>
+      <button data-test="remove-item-4" type="button">Remove</button>
+    </div>
+    <div data-test="inventory-item" data-name="Sauce Labs Bike Light">
+      <div data-test="inventory-item-name">Sauce Labs Bike Light</div>
+      <div data-test="item-quantity">1</div>
+      <div data-test="inventory-item-price">$9.99</div>
+      <button data-test="remove-item-0" type="button">Remove</button>
+    </div>
+  </div>
+
+  <script>
+    const rows = document.getElementById("rows");
+    const host = document.getElementById("badge-host");
+    let count = 2;
+
+    function renderBadge() {
+      host.innerHTML = count > 0 ? `<div data-test="shopping-cart-badge">${count}</div>` : "";
+    }
+
+    rows.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) {
+        return;
+      }
+      const row = button.closest('[data-test="inventory-item"]');
+      row.remove();
+      count = Math.max(0, count - 1);
+      renderBadge();
+    });
+
+    document.getElementById("checkout").addEventListener("click", () => {
+      window.location.href = "checkout-step-one.html";
+    });
+
+    renderBadge();
+  </script>
+</body>
+</html>

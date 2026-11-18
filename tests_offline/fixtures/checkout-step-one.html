@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Checkout: Your Information</title>
+</head>
+<body>
+  <div data-test="title">Checkout: Your Information</div>
+  <input data-test="firstName" id="first-name" name="firstName">
+  <input data-test="lastName" id="last-name" name="lastName">
+  <input data-test="postalCode" id="postal-code" name="postalCode">
+  <div data-test="error" id="error" hidden>
+    <button data-test="error-button" id="error-button" type="button"
+            aria-label="Close" style="width: 20px; height: 20px"></button>
+    <span id="error-text"></span>
+  </div>
+  <button data-test="continue" id="continue" type="button">Continue</button>
+  <a data-test="cancel" href="cart.html">Cancel</a>
+
+  <script>
+    const errorBox = document.getElementById("error");
+    const errorText = document.getElementById("error-text");
+
+    function showError(message) {
+      errorText.textContent = message;
+      errorBox.hidden = false;
+    }
+
+    document.getElementById("error-button").addEventListener("click", () => {
+      errorBox.hidden = true;
+    });
+
+    document.getElementById("continue").addEventListener("click", () => {
+      if (!document.getElementById("first-name").value.trim()) {
+        showError("Error: First Name is required");
+        return;
+      }
+      if (!document.getElementById("last-name").value.trim()) {
+        showError("Error: Last Name is required");
+        return;
+      }
+      if (!document.getElementById("postal-code").value.trim()) {
+        showError("Error: Postal Code is required");
+        return;
+      }
+      window.location.href = "checkout-step-two.html";
+    });
+  </script>
+</body>
+</html>

@@ -6,7 +6,7 @@
 [![pytest](https://img.shields.io/badge/pytest-9.2-0A9EDC)](https://pytest.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-Selenium + pytest + YAML 的 Web UI 自动化工程，覆盖 <https://www.saucedemo.com/> 从登录到下单的完整链路。26 条用例、7 个 Page Object、32 条配置层单测；定位器与测试数据全部外置，失败截图、现场 JSON 与日志尾部直接内嵌 HTML 报告。
+Selenium + pytest + YAML 的 Web UI 自动化工程，覆盖 <https://www.saucedemo.com/> 从登录到下单的完整链路。26 条业务用例、7 个 Page Object、32 条配置层单测与 22 条离线页面对象测试；定位器与测试数据全部外置，失败截图、现场 JSON 与日志尾部直接内嵌 HTML 报告。
 
 ## 项目亮点
 
@@ -14,7 +14,8 @@ Selenium + pytest + YAML 的 Web UI 自动化工程，覆盖 <https://www.sauced
 - **YAML 驱动**：环境、定位器、参数化数据全部外置；配置优先级 CLI > 环境变量 > 环境 YAML > 默认值，32 条单测覆盖。
 - **失败可诊断**：失败截图、现场元信息、日志尾部写入 pytest-html 报告，同时按 `run_id` 归档，报告单文件离线可开。
 - **需求可追溯**：SRS → RTM → pytest 节点 → 标记 → 断言逐条映射，`tools/verify_traceability.py` 自动校验 23 项。
-- **双浏览器 CI**：lint → 32 条单测 → Chrome/Firefox 矩阵；push/PR 跑 smoke，定时与手动触发跑全量回归。
+- **离线框架测试**：本地 HTML fixture + 回环 HTTP 服务，22 条测试覆盖 BasePage 与 7 个 Page Object，不依赖公网站点，站点抖动时仍可验证框架改动。
+- **双浏览器 CI**：lint → 32 条配置单测 + 22 条离线测试 → Chrome/Firefox 矩阵；push/PR 跑 smoke，定时与手动触发跑全量回归。
 
 ## 3 条常用命令
 
@@ -192,6 +193,10 @@ UI_RUN_ID=local-debug pytest -m smoke -v
 ├── tests_unit/
 │   ├── test_config_loader.py       # 配置优先级、深度合并、校验、定位器
 │   └── test_artifacts.py           # run_id 与归档逻辑
+├── tests_offline/                  # 不访问公网的页面对象测试
+│   ├── fixtures/                   # 本地 HTML 页面与交互脚本
+│   ├── test_base_page_offline.py   # 定位策略、显式等待、基础交互
+│   └── test_pages_offline.py       # 7 个 Page Object 的动作与状态查询
 ├── testdata/
 │   ├── checkout_cases.yaml         # 结账必填校验参数化数据
 │   └── login_cases.yaml            # 登录空字段参数化数据
@@ -210,6 +215,7 @@ UI_RUN_ID=local-debug pytest -m smoke -v
 ├── .github/workflows/ui-tests.yml  # CI：lint + unit + Chrome/Firefox 矩阵
 ├── pytest.ini                      # UI 测试配置
 ├── pytest-unit.ini                 # 配置层单元测试配置
+├── pytest-offline.ini              # 离线页面对象测试配置
 ├── pyproject.toml                  # ruff 静态检查配置
 ├── requirements.txt                # 运行依赖
 ├── requirements-dev.txt            # 开发依赖（ruff）
@@ -477,6 +483,7 @@ def test_checkout_required_field_validation(pages, accounts, case):
 | 指定浏览器 | `pytest --browser=chrome -v` |
 | 指定环境 | `pytest --env=demo -v` |
 | 配置层单元测试 | `pytest -c pytest-unit.ini -v` |
+| 离线页面对象测试（本地 HTML，不访问公网） | `pytest -c pytest-offline.ini -v` |
 | 指定构建号归档 | `UI_RUN_ID=feature-x pytest -v` |
 | 输出 HTML 报告 | 默认已写入 `reports/report.html` |
 
@@ -489,6 +496,8 @@ def test_checkout_required_field_validation(pages, accounts, case):
 5. **看页面源码**：临时把 `artifacts.save_page_source_on_failure` 改为 `true`，复现后到 `reports/runs/<run_id>/page_source/` 分析 DOM。
 6. **核定位器**：用浏览器 DevTools 确认 `data-test` / id 是否变化，只改对应页面 YAML，重跑单用例。
 7. **判断归属**：站点慢/改版属于产品与用例问题，不要用 `sleep` 或盲目重试掩盖。
+
+改动 `core/base_page.py` 或页面对象后，先跑离线套件 `pytest -c pytest-offline.ini -q`（22 条，约 14s），确认框架层没有回退，再跑公网用例。
 
 ### 7.3 常见问题
 
@@ -522,12 +531,13 @@ def test_checkout_required_field_validation(pages, accounts, case):
 
 ## 9. CI 接入
 
-已提供 `.github/workflows/ui-tests.yml`，四个 job：
+已提供 `.github/workflows/ui-tests.yml`，五个 job：
 
 | Job | 触发条件 | 内容 | 产物保留 |
 |---|---|---|---|
 | `lint` | push(main) / PR / 手动 / 定时 | `ruff check .` | 无 |
 | `unit` | push(main) / PR / 手动 / 定时 | Python 3.11、3.13 矩阵，`pytest -c pytest-unit.ini -v`（32 条配置层单测） | 无 |
+| `offline` | push(main) / PR / 手动 / 定时 | Chrome 无头，`pytest -c pytest-offline.ini -v`（22 条本地 HTML 页面对象测试） | 无 |
 | `smoke` | push(main) / PR | Chrome、Firefox 矩阵，`pytest -m smoke -v` | 7 天 |
 | `regression` | 定时（每日 18:00 UTC）/ 手动 | Chrome、Firefox 矩阵，全量 `pytest -v` | 14 天 |
 
@@ -552,9 +562,20 @@ jobs:
       - run: python -m pip install -r requirements.txt
       - run: python -m pytest -c pytest-unit.ini -v
 
+  offline:
+    needs: [lint, unit]
+    env:
+      UI_OFFLINE_BROWSER: chrome
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13", cache: pip }
+      - run: python -m pip install -r requirements.txt
+      - run: python -m pytest -c pytest-offline.ini -v
+
   smoke:
     if: github.event_name == 'push' || github.event_name == 'pull_request'
-    needs: [lint, unit]
+    needs: [lint, unit, offline]
     strategy:
       fail-fast: false
       matrix: { browser: [chrome, firefox] }
@@ -583,8 +604,9 @@ jobs:
 
 CI 约定：
 
-- 静态检查与单元测试先行，失败则 smoke/regression 不启动，避免浪费浏览器时长。
-- PR 跑 lint + 单测 + smoke（双浏览器），定时与手动跑全量回归（双浏览器）。
+- 静态检查、配置单测与离线页面对象测试先行，失败则 smoke/regression 不启动，避免浪费浏览器时长。
+- PR 跑 lint + 单测 + 离线测试 + smoke（双浏览器），定时与手动跑全量回归（双浏览器）。
+- 离线测试使用本地回环 HTTP 服务与 HTML fixture，不访问 SauceDemo；公网抖动不会影响框架层门禁。
 - `UI_RUN_ID` 由构建号生成，`reports/runs/<run_id>/` 与 `logs/runs/<run_id>/` 一一对应，产物按构建下载。
 - 凭据通过 Secret 注入，仓库只保存变量名。
 - 串行优先；SauceDemo 为共享演示站，矩阵只并行不同浏览器，不提高单浏览器并发。
@@ -670,6 +692,7 @@ CI 约定：
 - [x] 每条用例独立 WebDriver，结束可靠 `quit()`
 - [x] 失败时生成截图、元信息、日志和 HTML 报告，报告中内嵌截图、现场 JSON 与日志尾部，并按 `UI_RUN_ID` 归档
 - [x] 配置层单元测试 32 条通过，覆盖配置优先级、非法配置与归档逻辑
+- [x] 离线页面对象测试 22 条通过（本地 HTML fixture + 回环 HTTP，不访问公网），覆盖 BasePage 与 7 个 Page Object
 - [x] ruff 静态检查 0 告警，并纳入 CI lint job
 - [x] README 说明安装、运行、目录职责、报告位置与账号边界
 - [x] 26 条用例与需求追踪矩阵逐条对齐：`python tools/verify_traceability.py` 23/23 检查通过
@@ -736,6 +759,15 @@ collected 26 items
 ```
 
 Chrome 有头模式用于本机“实跑”验证，逐条可见窗口操作；默认无头模式与 CI 使用同一套命令。
+
+```text
+platform win32 -- Python 3.13.12, pytest-9.2.0
+browser=chrome 158 headless=True
+collected 22 items
+22 passed in 14.01s
+```
+
+离线套件由 `pytest-offline.ini` 单独收集，不进入 26 条业务用例统计；连续 3 轮均 22/22 通过。
 
 运行编号 `final-26cases-20261117g`，报告与归档见 `reports/runs/final-26cases-20261117g/`。紧邻的前一轮为 25/26：失败用例在新建会话首次导航时收到 `net::ERR_CONNECTION_CLOSED`，属于公网站点瞬时断连，复跑整轮 26/26 通过（分析见 [`docs/缺陷分析示例.md`](docs/缺陷分析示例.md)）。
 

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Products</title>
+</head>
+<body>
+  <div data-test="title">Products</div>
+  <select data-test="product-sort-container" name="sort">
+    <option value="az">Name (A to Z)</option>
+    <option value="za">Name (Z to A)</option>
+    <option value="lohi">Price (low to high)</option>
+    <option value="hilo">Price (high to low)</option>
+  </select>
+  <a data-test="shopping-cart-link" href="cart.html">Cart</a>
+  <div id="badge-host"></div>
+  <button id="react-burger-menu-btn" class="menu-button" type="button">Menu</button>
+  <a data-test="logout-sidebar-link" href="." hidden>Logout</a>
+  <p data-test="note">visible note</p>
+  <p data-test="note" hidden>hidden note</p>
+
+  <div id="list">
+    <div data-test="inventory-item" data-name="Sauce Labs Backpack" data-price="29.99">
+      <a data-test="item-4-title-link" href="inventory-item.html">
+        <div data-test="inventory-item-name">Sauce Labs Backpack</div>
+      </a>
+      <div data-test="inventory-item-price">$29.99</div>
+      <button data-test="add-to-cart-item-4" type="button">Add to cart</button>
+    </div>
+    <div data-test="inventory-item" data-name="Sauce Labs Bike Light" data-price="9.99">
+      <a data-test="item-0-title-link" href="inventory-item.html">
+        <div data-test="inventory-item-name">Sauce Labs Bike Light</div>
+      </a>
+      <div data-test="inventory-item-price">$9.99</div>
+      <button data-test="add-to-cart-item-0" type="button">Add to cart</button>
+    </div>
+    <div data-test="inventory-item" data-name="Sauce Labs Bolt T-Shirt" data-price="15.99">
+      <a data-test="item-1-title-link" href="inventory-item.html">
+        <div data-test="inventory-item-name">Sauce Labs Bolt T-Shirt</div>
+      </a>
+      <div data-test="inventory-item-price">$15.99</div>
+      <button data-test="add-to-cart-item-1" type="button">Add to cart</button>
+    </div>
+  </div>
+
+  <script>
+    const list = document.getElementById("list");
+    const host = document.getElementById("badge-host");
+    const logoutLink = document.querySelector('[data-test="logout-sidebar-link"]');
+    let count = 0;
+
+    function renderBadge() {
+      host.innerHTML = count > 0 ? `<div data-test="shopping-cart-badge">${count}</div>` : "";
+    }
+
+    list.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) {
+        return;
+      }
+      const current = button.dataset.test || "";
+      if (current.startsWith("add-to-cart")) {
+        button.dataset.original = current;
+        button.dataset.test = current.replace("add-to-cart", "remove");
+        button.textContent = "Remove";
+        count += 1;
+        renderBadge();
+      } else if (current.startsWith("remove")) {
+        button.dataset.test = button.dataset.original;
+        button.textContent = "Add to cart";
+        count = Math.max(0, count - 1);
+        renderBadge();
+      }
+    });
+
+    document.querySelector('[data-test="product-sort-container"]').addEventListener("change", (event) => {
+      const rows = Array.from(list.querySelectorAll('[data-test="inventory-item"]'));
+      const mode = event.target.value;
+      rows.sort((left, right) => {
+        if (mode === "az") {
+          return left.dataset.name.localeCompare(right.dataset.name);
+        }
+        if (mode === "za") {
+          return right.dataset.name.localeCompare(left.dataset.name);
+        }
+        if (mode === "lohi") {
+          return Number(left.dataset.price) - Number(right.dataset.price);
+        }
+        return Number(right.dataset.price) - Number(left.dataset.price);
+      });
+      rows.forEach((row) => list.appendChild(row));
+    });
+
+    document.getElementById("react-burger-menu-btn").addEventListener("click", () => {
+      logoutLink.hidden = false;
+    });
+  </script>
+</body>
+</html>

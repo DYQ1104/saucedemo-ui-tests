@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Swag Labs</title>
+</head>
+<body>
+  <form id="login-form">
+    <input data-test="username" id="user-name" name="user-name" autocomplete="username">
+    <input data-test="password" id="password" name="password" type="password" autocomplete="current-password">
+    <button data-test="login-button" id="login-button" type="button">Login</button>
+  </form>
+  <div data-test="error" id="error" hidden>
+    <button data-test="error-button" id="error-button" type="button"
+            aria-label="Close" style="width: 20px; height: 20px"></button>
+    <span id="error-text"></span>
+  </div>
+  <script>
+    const errorBox = document.getElementById("error");
+    const errorText = document.getElementById("error-text");
+
+    function showError(message) {
+      errorText.textContent = message;
+      errorBox.hidden = false;
+    }
+
+    document.getElementById("login-button").addEventListener("click", () => {
+      const username = document.getElementById("user-name").value.trim();
+      const password = document.getElementById("password").value;
+      if (!username) {
+        showError("Epic sadface: Username is required");
+        return;
+      }
+      if (!password) {
+        showError("Epic sadface: Password is required");
+        return;
+      }
+      if (username !== "standard_user" || password !== "secret_sauce") {
+        showError("Epic sadface: Username and password do not match any user in this service");
+        return;
+      }
+      window.location.href = "inventory.html";
+    });
+
+    document.getElementById("error-button").addEventListener("click", () => {
+      errorBox.hidden = true;
+    });
+  </script>
+</body>
+</html>

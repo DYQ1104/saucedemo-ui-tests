@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Sauce Labs Backpack</title>
+</head>
+<body>
+  <a data-test="back-to-products" href="inventory.html">Back to products</a>
+  <div id="badge-host"></div>
+  <div data-test="inventory-item-name">Sauce Labs Backpack</div>
+  <div data-test="inventory-item-price">$29.99</div>
+  <button data-test="add-to-cart" type="button">Add to cart</button>
+
+  <script>
+    const host = document.getElementById("badge-host");
+    const button = document.querySelector('[data-test="add-to-cart"]');
+    let inCart = false;
+
+    function render() {
+      host.innerHTML = inCart ? '<div data-test="shopping-cart-badge">1</div>' : "";
+      button.dataset.test = inCart ? "remove" : "add-to-cart";
+      button.textContent = inCart ? "Remove" : "Add to cart";
+    }
+
+    button.addEventListener("click", () => {
+      inCart = !inCart;
+      render();
+    });
+  </script>
+</body>
+</html>

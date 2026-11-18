@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Checkout: Overview</title>
+</head>
+<body>
+  <div data-test="title">Checkout: Overview</div>
+  <div data-test="inventory-item">
+    <div data-test="inventory-item-name">Sauce Labs Backpack</div>
+    <div data-test="inventory-item-price">$29.99</div>
+  </div>
+  <div data-test="inventory-item">
+    <div data-test="inventory-item-name">Sauce Labs Bike Light</div>
+    <div data-test="inventory-item-price">$9.99</div>
+  </div>
+  <div data-test="subtotal-label">Item total: $39.98</div>
+  <div data-test="tax-label">Tax: $3.20</div>
+  <div data-test="total-label">Total: $43.18</div>
+  <div data-test="payment-info-value">SauceCard #31337</div>
+  <div data-test="shipping-info-value">Free Pony Express Delivery!</div>
+  <button data-test="finish" id="finish" type="button">Finish</button>
+  <a data-test="cancel" href="inventory.html">Cancel</a>
+
+  <script>
+    document.getElementById("finish").addEventListener("click", () => {
+      window.location.href = "checkout-complete.html";
+    });
+  </script>
+</body>
+</html>
