@@ -24,7 +24,7 @@ pytest -m smoke -v                    # 4 条冒烟，提交前必跑
 pytest -v                             # 26 条全量回归
 ```
 
-> 最近验证：2026-11-17，Windows 11 + Python 3.13.12 + Edge 157（无头）。全量 26/26 通过（详见第 13.3 节）。
+> 最近验证：2026-11-18，Windows 11 + Python 3.13.12。Edge 157（无头）26/26 200.78s；Chrome 158（有头）26/26 362.14s（详见第 13.3 节）。
 > CI：run #10（dispatch）双浏览器 26 条全量通过：Ruff 9s、unit 13s/9s、Chrome regression 49s、Firefox regression 151s；run #8（push）lint + 单测矩阵 + 双浏览器 smoke 亦全部通过。
 
 **配套文档**：[需求规格说明书](docs/需求规格说明书.md)（范围、功能/非功能需求、26 条用例与验收标准）、[需求追踪矩阵](docs/需求追踪矩阵.md)（TC → BR/FR → 测试节点 → 标记 → 断言逐条映射）、[缺陷分析示例](docs/缺陷分析示例.md)（基于真实失败证据的定位过程）。
@@ -647,7 +647,7 @@ CI 约定：
 
 ### 11.2 下一步扩展
 
-1. **补齐本机浏览器证据**：Chrome/Firefox 已在托管 CI 完成 26 条全量回归；本机仅 Edge 157 可运行。
+1. **补齐本机浏览器证据**：本机 Edge 157 与 Chrome 158 已完成 26 条全量；Firefox 由托管 CI 覆盖。
 2. **更多边界场景**：排序结果跨页面保持、历史订单查询、支付失败分支。
 3. **并行执行**：先确认账号与会话隔离，再引入 `pytest-xdist`，逐步提升并发。
 4. **报告升级**：需要趋势与附件时切换 Allure；当前 pytest-html 已内嵌失败证据，足够首期闭环。
@@ -660,7 +660,8 @@ CI 约定：
 
 - [x] 一条命令可选择环境并运行指定测试：`pytest --env=demo tests/test_login.py -v`
 - [x] P0 用例本机稳定跑通：Edge 157 下 20 条连续 3 轮全部通过；新增用例后 26 条全量通过（200.78s，2026-11-17）
-- [ ] Chrome/Firefox 本机实跑：本机未安装 Chrome/Firefox，且 `winget` 安装被策略拦截；已在 CI 完成双浏览器 26 条全量回归
+- [x] Chrome 本机实跑：Chrome 158 有头模式 26/26 通过（362.14s，2026-11-18）
+- [ ] Firefox 本机实跑：本机未安装 Firefox，且 `winget` 安装被策略拦截；已在 CI 完成 26 条全量回归
 - [x] 定位器、环境地址、业务数据与测试代码分离
 - [x] 凭据可使用环境变量覆盖，仓库不保存真实凭据
 - [x] 每条用例独立 WebDriver，结束可靠 `quit()`
@@ -723,6 +724,15 @@ browser=edge 157.0.4341.60 headless=True
 collected 26 items
 26 passed in 200.78s
 ```
+
+```text
+platform win32 -- Python 3.13.12, pytest-9.2.0
+browser=chrome 158.0.8127.37 headless=False
+collected 26 items
+26 passed in 362.14s
+```
+
+Chrome 有头模式用于本机“实跑”验证，逐条可见窗口操作；默认无头模式与 CI 使用同一套命令。
 
 运行编号 `final-26cases-20261117g`，报告与归档见 `reports/runs/final-26cases-20261117g/`。紧邻的前一轮为 25/26：失败用例在新建会话首次导航时收到 `net::ERR_CONNECTION_CLOSED`，属于公网站点瞬时断连，复跑整轮 26/26 通过（分析见 [`docs/缺陷分析示例.md`](docs/缺陷分析示例.md)）。
 
